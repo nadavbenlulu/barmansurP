@@ -1,0 +1,115 @@
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-4 order-lg-1">
+            <div class="card border-0 shadow-sm p-4 text-center h-100" style="border-radius: 20px; background: white; border-top: 5px solid #00aaff !important;">
+                <div class="mb-3 position-relative">
+                    <div class="mx-auto" style="width: 140px; height: 140px; border-radius: 50%; border: 4px solid #00aaff; overflow: hidden; background-color: #f8f9fa;">
+                        <img src="/uploads/pics/bar.jpeg" alt="בר מנצור" id="agentImage" 
+                             onerror="this.src='https://via.placeholder.com/140?text=Bar+Mansour'"
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+                
+                <h4 class="fw-bold mb-1" style="color: #003366;">בר מנצור</h4>
+                <p class="text-primary fw-medium mb-3">מומחה פנסיוני וביטוח חיים</p>
+                
+                <hr class="my-3 opacity-10">
+                
+                <div class="text-end mb-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="bg-light p-2 rounded-circle"><i class="bi bi-whatsapp text-success fs-5"></i></div>
+                        <a href="https://wa.me/972506888533?text=שלום%20בר,%20אני%20פונה%20אליך%20דרך%20אתר%20הקישורים" target="_blank" class="text-decoration-none text-dark fw-semibold" dir="ltr">050-6888533</a>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="bg-light p-2 rounded-circle"><i class="bi bi-envelope text-danger fs-5"></i></div>
+                        <a href="mailto:barbur30@gmail.com" class="text-decoration-none text-dark fw-semibold">barbur30@gmail.com</a>
+                    </div>
+                </div>
+
+                <a href="https://wa.me/972506888533?text=שלום%20בר,%20אשמח%20להתייעץ%20איתך%20בנושא%20ביטוח" target="_blank" class="btn btn-success w-100 py-3 fw-bold shadow-sm" style="background-color: #25D366; border: none;">
+                    <i class="bi bi-whatsapp"></i> צור קשר בוואטסאפ
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-8 order-lg-2">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 20px; background: white;">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h2 class="fw-bold mb-4" style="color: #003366;">מערכת קיצור קישורים לסוכנים</h2>
+                    <p class="text-muted">הפוך לינקים ארוכים של חברות ביטוח לקישורים קצרים וממותגים</p>
+                    
+                    <div class="input-group input-group-lg mb-3">
+                        <input type="text" id="longUrl" class="form-control" placeholder="הדבק כאן את הקישור הארוך..." dir="rtl">
+                        <button class="btn btn-primary px-4" style="background-color: #003366; border: none;" type="button" id="shortenBtn" onclick="shortenLink()">
+                            <i class="bi bi-link-45deg"></i> קצר קישור
+                        </button>
+                    </div>
+
+                    <div id="resultArea" class="mt-4 d-none animate__animated animate__fadeIn">
+                        <div class="p-3 bg-light rounded d-flex align-items-center justify-content-between border border-primary">
+                            <span id="shortenedUrl" class="fw-bold text-primary" style="font-size: 1.2rem; word-break: break-all;"></span>
+                            <button class="btn btn-outline-dark btn-sm ms-2" onclick="copyToClipboard(this)">
+                                <i class="bi bi-clipboard"></i> העתק
+                            </button>
+                        </div>
+                        <small class="text-success mt-2 d-block fw-bold">הקישור מוכן לשליחה ללקוח!</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function shortenLink() {
+        const longUrlInput = document.getElementById('longUrl');
+        const longUrl = longUrlInput.value;
+        const resultArea = document.getElementById('resultArea');
+        const shortenedUrlElem = document.getElementById('shortenedUrl');
+        const btn = document.getElementById('shortenBtn');
+
+        if (!longUrl) {
+            alert('אנא הזן קישור תקין');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+        try {
+            const response = await fetch('/api/link/shorten', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ longUrl: longUrl })
+            });
+
+            const data = await response.json();
+
+            if (data.shortUrl) {
+                shortenedUrlElem.innerText = window.location.origin + '/' + data.shortCode;
+                resultArea.classList.remove('d-none');
+                longUrlInput.value = '';
+            } else {
+                alert('שגיאה ביצירת הקישור');
+            }
+        } catch (error) {
+            alert('חלה שגיאה בחיבור לשרת');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-link-45deg"></i> קצר קישור';
+        }
+    }
+
+    function copyToClipboard(btn) {
+        const text = document.getElementById('shortenedUrl').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check-lg"></i> הועתק';
+            btn.classList.replace('btn-outline-dark', 'btn-success');
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+                btn.classList.replace('btn-success', 'btn-outline-dark');
+            }, 2000);
+        });
+    }
+</script>
